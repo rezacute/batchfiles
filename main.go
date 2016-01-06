@@ -4,8 +4,17 @@ import (
   "os"
   "github.com/codegangsta/cli"
   "fmt"
+  "path/filepath"
+  "log"
+  "strings"
 )
 
+var (
+  ext string
+  src_dir string
+  in_prefix string
+  out_prefix string
+)
 func main() {
   app := cli.NewApp()
   app.Name = "batchfiles"
@@ -24,11 +33,37 @@ func main() {
                         cli.StringFlag{
                             Name:  "source",
                             Value: "",
-                            Usage: "The directory sorce path ",
+                            Usage: "The directory source path ",
+                        },
+                        cli.StringFlag{
+                            Name:  "src-prefix",
+                            Value: "",
+                            Usage: "The prefix source filename ",
+                        },
+                        cli.StringFlag{
+                            Name:  "add-prefix",
+                            Value: "",
+                            Usage: "The prefix dest filename ",
+                        },
+                        cli.StringFlag{
+                            Name:  "src-extension",
+                            Value: "",
+                            Usage: "The filter extension source filename ",
                         },
                     },
                     Action: func(c *cli.Context) {
-                        fmt.Println("renaming", c.String("source"))
+                        src_dir = c.String("source")
+
+                        if src_dir == ""{
+                          return
+                        }
+                        ext = c.String("src-extension")
+                        in_prefix = c.String("src-prefix")
+                        out_prefix = c.String("add-prefix")
+                        fmt.Println("extension", ext)
+
+                        filepath.Walk(src_dir, visit)
+
                     },
                 },
             },
@@ -36,4 +71,17 @@ func main() {
     }
 
   app.Run(os.Args)
+}
+
+func visit(path string, f os.FileInfo, err error) (e error) {
+    if filepath.Ext(path) != ext || !strings.HasPrefix(f.Name(), in_prefix){
+
+        return
+    }
+    dir := filepath.Dir(path)
+    base := filepath.Base(path)
+    newname := filepath.Join(dir, out_prefix + base)
+    log.Printf("mv \"%s\" \"%s\"\n", path, newname)
+    os.Rename(path, newname)
+    return
 }
