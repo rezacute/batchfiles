@@ -3,7 +3,6 @@ package main
 import (
   "os"
   "github.com/codegangsta/cli"
-  "fmt"
   "path/filepath"
   "log"
   "strings"
@@ -60,10 +59,7 @@ func main() {
                         ext = c.String("src-extension")
                         in_prefix = c.String("src-prefix")
                         out_prefix = c.String("add-prefix")
-                        fmt.Println("extension", ext)
-
                         filepath.Walk(src_dir, visit)
-
                     },
                 },
             },
@@ -75,7 +71,6 @@ func main() {
 
 func visit(path string, f os.FileInfo, err error) (e error) {
     if filepath.Ext(path) != ext || !strings.HasPrefix(f.Name(), in_prefix){
-
         return
     }
     dir := filepath.Dir(path)
